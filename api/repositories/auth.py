@@ -1,8 +1,6 @@
-from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
 from api.core.database import get_db
 from api.schemas.user import UserCreate, UserResponse
 from api.schemas.auth import Token
@@ -13,10 +11,6 @@ from api.repositories.user_repository import (
 from api.auth.jwt import verify_password, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
 
 
 @router.post("/signup", response_model=UserResponse)

@@ -1,13 +1,10 @@
 from fastapi import FastAPI
-import uvicorn
-from api.routes.users import router as user_router
-from api.database import Base, engine
+from api.core.database import Base, engine
+from api.routes import users, auth
 
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-app.include_router(user_router, prefix="/users", tags=["Users"])
-
-if __name__ == '__main__':
-    uvicorn.run('main:app', port=8000, reload=True)  
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])

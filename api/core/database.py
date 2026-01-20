@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from api.config import DATABASE_URL
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-engine = create_engine(DATABASE_URL, echo=True)
+from api.core.config import settings
+
+engine = create_engine(settings.DATABASE_URL)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -10,12 +11,13 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
+Base = declarative_base()
+
+
+# ✅ ADD THIS
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-
-Base = declarative_base()
