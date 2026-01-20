@@ -1,28 +1,3 @@
-# from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-# class Settings(BaseSettings):
-#     APP_NAME: str = "Delivery API"
-#     APP_ENV: str = "development"
-#     DEBUG: bool = True
-
-#     DATABASE_URL: str
-
-#     SECRET_KEY: str
-#     ALGORITHM: str
-#     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-
-#     CORS_ORIGINS: str = ""
-
-#     model_config = SettingsConfigDict(
-#         env_file=".env",
-#         extra="ignore"
-#     )
-
-
-# settings = Settings()
-
-# uvicorn api.main:app --reload
 from dotenv import load_dotenv
 import os
 
