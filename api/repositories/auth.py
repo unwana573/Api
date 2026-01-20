@@ -8,18 +8,19 @@ from api.repositories.user_repository import (
     create_user,
     get_user_by_email
 )
-from api.auth.jwt import verify_password, create_access_token
+from api.auth.jwt import create_access_token
+from api.repositories.user_repository import create_user, get_user_by_email
+from api.core.security import hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-
-@router.post("/signup", response_model=UserResponse)
+@router.post("/signup", status_code=201)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
     if get_user_by_email(db, user.email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    return create_user(db, user)
-
+    db_user = create_user(db, user, hash_password)
+    return {"message": "User created", "user_id": db_user.id}
 
 @router.post("/login", response_model=Token)
 def login(

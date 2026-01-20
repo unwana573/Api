@@ -1,18 +1,23 @@
-import hashlib
 from passlib.context import CryptContext
+import hashlib
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    # Pre-hash using SHA-256 to avoid bcrypt 72-byte limit
-    password_bytes = password.encode("utf-8")
-    sha256_hash = hashlib.sha256(password_bytes).hexdigest()
+    """
+    Hash the password using SHA256 first, then bcrypt.
+    Ensures bcrypt does not receive more than 72 bytes.
+    """
+    # Step 1: SHA256 hash (hex digest is 64 characters)
+    sha256_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+    # Step 2: bcrypt hash
     return pwd_context.hash(sha256_hash)
 
+
 def verify_password(password: str, hashed_password: str) -> bool:
-    password_bytes = password.encode("utf-8")
-    sha256_hash = hashlib.sha256(password_bytes).hexdigest()
+    """
+    Verify password by applying SHA256 and comparing with bcrypt hash.
+    """
+    sha256_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
     return pwd_context.verify(sha256_hash, hashed_password)

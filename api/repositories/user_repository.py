@@ -1,19 +1,16 @@
 from sqlalchemy.orm import Session
+from api.models.models import User  # your SQLAlchemy User model
 
-from api.models.models import User
-from api.schemas.user import UserCreate
-from api.core.security import hash_password, verify_password
-
-
-def get_user_by_email(db: Session, email: str) -> User | None:
-    return db.query(User).filter(User.email == email).first()
-
-
-def create_user(db: Session, user: UserCreate) -> User:
+def create_user(db: Session, user, hash_func):
+    """
+    Create a new user in the database.
+    hash_func: function to hash the password (e.g., hash_password from security.py)
+    """
+    hashed = hash_func(user.password)
     db_user = User(
         email=user.email,
+        hashed_password=hashed,
         full_name=user.full_name,
-        hashed_password=hash_password(user.password),
     )
     db.add(db_user)
     db.commit()
@@ -21,12 +18,5 @@ def create_user(db: Session, user: UserCreate) -> User:
     return db_user
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User | None:
-    user = get_user_by_email(db, email)
-    if not user:
-        return None
-
-    if not verify_password(password, user.hashed_password):
-        return None
-
-    return user
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
