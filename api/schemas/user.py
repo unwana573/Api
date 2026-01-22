@@ -1,4 +1,6 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
+from sqlalchemy import Enum
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -12,3 +14,13 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    full_name: Optional[str]
+    role: str
+
+    class Config:
+        from_attributes = True 

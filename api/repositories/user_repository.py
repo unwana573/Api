@@ -1,22 +1,35 @@
 from sqlalchemy.orm import Session
-from api.models.models import User  # your SQLAlchemy User model
+from api.models.models import User
+from api.schemas.user import UserCreate
+from api.core.security import hash_password
 
-def create_user(db: Session, user, hash_func):
-    """
-    Create a new user in the database.
-    hash_func: function to hash the password (e.g., hash_password from security.py)
-    """
-    hashed = hash_func(user.password)
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
+
+
+def create_user(db: Session, user: UserCreate):
     db_user = User(
         email=user.email,
-        hashed_password=hashed,
         full_name=user.full_name,
+        hashed_password=hash_password(user.password),
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
+
+def update_user(db: Session, user_id: int, data):
+    user = get_user_by_id(db, user_id)
+    if data.full_name:
+        user.full_name = data.full_name
+    db.commit()
+    db.refresh(user)
+    return user
+
+def get_all_users(db:Session):
+    return db.query(User).all()
