@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from api.auth.dependencies import validate_password_strength
 from api.core.database import get_db
+from api.models.models import User
 from api.schemas.user import UserCreate
 from api.repositories.user_repository import create_user, get_user_by_email
 from api.core.security import verify_password
@@ -16,9 +18,17 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+    
+    if db.query(User).filter(User.user_name == user.user_name).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken",
+    )
+
+    validate_password_strength(user.password)
 
     db_user = create_user(db, user)
-    return {"message": "User created", "user_id": db_user.id}
+    return {"message": "User created", "id": db_user.id}
 
 
 @router.post("/login")

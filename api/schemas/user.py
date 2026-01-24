@@ -1,11 +1,12 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import Enum
 
 class UserCreate(BaseModel):
     email: EmailStr
+    user_name: str
     full_name: str
     password: str
+    phone_number: str
 
 class UserResponse(BaseModel):
     id: int

@@ -3,15 +3,15 @@ from api.models.models import User
 from api.schemas.user import UserCreate
 from api.core.security import hash_password
 
-
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
-
 
 def create_user(db: Session, user: UserCreate):
     db_user = User(
         email=user.email,
         full_name=user.full_name,
+        user_name=user.user_name,
+        phone_number=user.phone_number,
         hashed_password=hash_password(user.password),
     )
     db.add(db_user)
