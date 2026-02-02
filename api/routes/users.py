@@ -4,7 +4,7 @@ from typing import List
 from api.core.database import get_db
 from api.repositories.user_repository import get_all_users
 from api.schemas.user import UserOut
-from api.auth.dependencies import get_current_user, require_admin
+from api.auth.dependencies import require_admin
 
 router = APIRouter(tags=["Users"])
 

@@ -13,8 +13,6 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
-
-# ✅ ADD THIS
 def get_db():
     db = SessionLocal()
     try:

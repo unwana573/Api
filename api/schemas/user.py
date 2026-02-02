@@ -6,7 +6,7 @@ class UserCreate(BaseModel):
     user_name: str
     full_name: str
     password: str
-    phone_number: str
+    phone_number: int
 
 class UserResponse(BaseModel):
     id: int
@@ -15,7 +15,6 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
 
 class UserOut(BaseModel):
     id: int

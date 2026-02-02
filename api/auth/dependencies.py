@@ -1,3 +1,4 @@
+import os
 import re
 from fastapi import HTTPException, status
 from fastapi import Depends, HTTPException, status
@@ -7,9 +8,10 @@ from sqlalchemy.orm import Session
 from api.core.config import settings
 from api.core.database import get_db
 from api.repositories.user_repository import get_user_by_id
-from api.models.models import User
+from api.models.models import Admin, User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -21,23 +23,37 @@ def get_current_user(
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM],
         )
+
+        # ✅ Ensure it's an access token
         if payload.get("type") != "access":
-            raise HTTPException(status_code=401)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type",
+            )
 
         user_id = payload.get("sub")
-        user = get_user_by_id(db, user_id)
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
+            )
+
+        # 🔥 IMPORTANT: cast to int
+        user = get_user_by_id(db, int(user_id))
 
         if not user:
-            raise HTTPException(status_code=401)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+            )
 
         return user
 
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Invalid or expired token",
         )
-
 
 def require_role(role: str):
     def role_checker(user=Depends(get_current_user)):
@@ -57,7 +73,6 @@ def require_admin(current_user: User = Depends(get_current_user)):
             detail="Admin access required"
         )
     return current_user
-
 
 def validate_password_strength(password: str):
     if len(password) < 8:
@@ -86,3 +101,36 @@ def validate_password_strength(password: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Password must contain at least one special character"
         )
+
+def admin_only(current_user=Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admins only"
+        )
+    return current_user
+
+SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret")
+REFRESH_SECRET_KEY: str = os.getenv("REFRESH_SECRET_KEY", "dev-refresh-secret")
+ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+
+def get_current_admin(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        admin_id: int = payload.get("sub")
+
+        if admin_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    admin = db.query(Admin).filter(Admin.id == admin_id).first()
+
+    if not admin:
+        raise HTTPException(status_code=401, detail="Admin not found")
+
+    return admin
