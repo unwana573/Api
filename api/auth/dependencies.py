@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from api.core.config import settings
 from api.core.database import get_db
 from api.repositories.user_repository import get_user_by_id
-from api.models.models import Admin, User
+from api.models.models import Admin, TokenBlacklist, User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -24,7 +24,6 @@ def get_current_user(
             algorithms=[settings.ALGORITHM],
         )
 
-        # ✅ Ensure it's an access token
         if payload.get("type") != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,7 +37,6 @@ def get_current_user(
                 detail="Invalid token payload",
             )
 
-        # 🔥 IMPORTANT: cast to int
         user = get_user_by_id(db, int(user_id))
 
         if not user:
@@ -134,3 +132,8 @@ def get_current_admin(
         raise HTTPException(status_code=401, detail="Admin not found")
 
     return admin
+
+def is_token_blacklisted(db: Session, token: str) -> bool:
+    return db.query(TokenBlacklist).filter(
+        TokenBlacklist.token == token
+    ).first() is not None

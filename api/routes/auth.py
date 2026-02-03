@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from api.auth.dependencies import validate_password_strength
+from api.auth.dependencies import get_current_user, validate_password_strength
 from api.core.database import get_db
-from api.models.models import Admin, User
+from api.models.models import Admin, TokenBlacklist, User
 from api.schemas.user import UserCreate
 from api.repositories.user_repository import create_user, get_user_by_email
 from api.core.security import verify_password
@@ -14,27 +14,22 @@ router = APIRouter(tags=["Auth"])
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
 
-    # Check if email already exists
     if get_user_by_email(db, user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
 
-    # Check if username already exists
     if db.query(User).filter(User.user_name == user.user_name).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already taken",
         )
 
-    # Validate password strength
     validate_password_strength(user.password)
 
-    # Create User entry
     db_user = create_user(db, user)
 
-    # If role is admin, create corresponding Admin entry
     if db_user.role == "admin":
         new_admin = Admin(user_id=db_user.id)
         db.add(new_admin)
@@ -68,3 +63,16 @@ def login(
         "refresh_token": refresh_token,
         "token_type": "bearer",
     }
+
+@router.post("/logout")
+def logout(
+    refresh_token: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    blacklisted = TokenBlacklist(token=refresh_token)
+    db.add(blacklisted)
+    db.commit()
+
+    return {"message": "Logged out successfully"}
+

@@ -15,6 +15,12 @@ class User(Base):
 
     orders = relationship("Order", back_populates="user")
 
+class TokenBlacklist(Base):
+    __tablename__ = "token_blacklist"
+
+    id = Column(Integer, primary_key=True)
+    token = Column(String, unique=True, nullable=False)
+
 class Admin(Base):
     __tablename__ = "admins"
 
