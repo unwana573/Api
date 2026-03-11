@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from api.core.config import settings
 from api.core.database import get_db
 from api.repositories.user_repository import get_user_by_id
-from api.models.models import Admin, TokenBlacklist, User
+from api.models.models import Admin, TokenBlacklist, User 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -126,7 +126,7 @@ def get_current_admin(
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    admin = db.query(Admin).filter(Admin.id == admin_id).first()
+    admin = db.query(User).filter(User.id == admin_id).first()
 
     if not admin:
         raise HTTPException(status_code=401, detail="Admin not found")

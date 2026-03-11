@@ -14,6 +14,7 @@ class User(Base):
     role = Column(String, default="admin", nullable=False)
 
     orders = relationship("Order", back_populates="user")
+    products = relationship("Product", back_populates="admin")
 
 class TokenBlacklist(Base):
     __tablename__ = "token_blacklist"
@@ -28,17 +29,16 @@ class Admin(Base):
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
-    products = relationship("Product", back_populates="admin")    
-
 class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
-    admin_id = Column(Integer, ForeignKey("admins.id"), nullable=False)
-
-    admin = relationship("Admin", back_populates="products")
+    admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    description = Column(String, nullable=True)
+    quantity = Column(Integer, nullable=True)
+    admin = relationship("User", back_populates="products")
 
 class Order(Base):
     __tablename__ = "orders"

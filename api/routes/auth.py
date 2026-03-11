@@ -8,6 +8,7 @@ from api.schemas.user import UserCreate
 from api.repositories.user_repository import create_user, get_user_by_email
 from api.core.security import verify_password
 from api.auth.jwt import create_access_token, create_refresh_token
+from fastapi import Header
 
 router = APIRouter(tags=["Auth"])
 
@@ -66,13 +67,12 @@ def login(
 
 @router.post("/logout")
 def logout(
-    refresh_token: str,
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
+    refresh_token: str = Header(alias="Refresh-Token")
 ):
     blacklisted = TokenBlacklist(token=refresh_token)
     db.add(blacklisted)
     db.commit()
 
     return {"message": "Logged out successfully"}
-

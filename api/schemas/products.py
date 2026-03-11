@@ -21,4 +21,8 @@ class ProductResponse(ProductCreate):
     class Config:
         from_attributes = True
 
-
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[int] = None
+    description: Optional[str] = None
+    quantity: Optional[int] = None
