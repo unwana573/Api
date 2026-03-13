@@ -7,7 +7,7 @@ from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from api.core.config import settings
 from api.core.database import get_db
-from api.repositories.user_repository import get_user_by_id
+from api.repositories.auth import get_user_by_id
 from api.models.models import Admin, TokenBlacklist, User 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

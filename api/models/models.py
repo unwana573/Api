@@ -11,7 +11,7 @@ class User(Base):
     full_name = Column(String)
     phone_number = Column(String)
     hashed_password = Column(String, nullable=False)
-    role = Column(String, default="admin", nullable=False)
+    role = Column(String, default="user", nullable=False)
 
     orders = relationship("Order", back_populates="user")
     products = relationship("Product", back_populates="admin")
@@ -33,7 +33,7 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     price = Column(Integer, nullable=False)
     admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     description = Column(String, nullable=True)

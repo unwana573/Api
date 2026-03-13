@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from api.auth.dependencies import get_current_user, validate_password_strength
 from api.core.database import get_db
 from api.models.models import Admin, TokenBlacklist, User
-from api.schemas.user import UserCreate
-from api.repositories.user_repository import create_user, get_user_by_email
+from api.schemas.auth import UserCreate
+from api.repositories.auth import create_user, get_user_by_email
 from api.core.security import verify_password
 from api.auth.jwt import create_access_token, create_refresh_token
 from fastapi import Header
@@ -30,6 +30,8 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     validate_password_strength(user.password)
 
     db_user = create_user(db, user)
+
+    return {"message": "User created successfully"}
 
     if db_user.role == "admin":
         new_admin = Admin(user_id=db_user.id)
