@@ -19,9 +19,9 @@ def get_users(
 def user_profile():
     return
 
-# @router.put("/")
-# def user_profile():
-#     return
+@router.put("/")
+def update_profile():
+    return
 
 @router.post("/")
 def user_address():
